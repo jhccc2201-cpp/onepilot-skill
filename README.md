@@ -1,5 +1,7 @@
 # OnePilot Skill
 
+`0.1.19-alpha` adds evidence-backed organizer intelligence. Event recommendations can return up to one optional organizer-affinity supplement after the primary activity matches, and agents can query, compare, or request a reviewed public-source enrichment task for an organizer.
+
 OnePilot Skill 是给本地 agent 使用的 **Skill + CLI 工具包**。
 
 它可以让 Codex、Claude Code、OpenClaw、Gemini CLI 等主流本地 agent 连接 OnePilot；其他支持本地命令、Skill、Extension 或 MCP 的 agent 也可以接入。

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.19-alpha
+
+- Add optional organizer-affinity supplement flags to event recommendations.
+- Add dedicated organizer lookup, style, audience, compare, and enrichment commands.
+- Add evidence boundaries and few-shot guidance for commercial orientation, concept-heavy content, participant samples, comments, and age matching.
+- Add CLI contract tests.
+
 ## v0.1.18-alpha
 
 - Added the versioned activity matching request contract with structured taxonomy IDs, date ranges and hard `must`/`exclude` constraints.

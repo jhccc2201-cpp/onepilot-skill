@@ -1,6 +1,6 @@
 {
   "name": "onepilot-skill",
-  "version": "0.1.18-alpha",
+  "version": "0.1.19-alpha",
   "description": "OnePilot Skill and CLI for local agents, including issue reporting. Official website: https://onepilot.zeabur.app",
   "type": "module",
   "bin": {
@@ -22,7 +22,8 @@
   "scripts": {
     "version": "node scripts/onepilot-agent.mjs version",
     "check-update": "node scripts/onepilot-agent.mjs check-update",
-    "status": "node scripts/onepilot-agent.mjs status"
+    "status": "node scripts/onepilot-agent.mjs status",
+    "test": "node --test scripts/*.test.mjs"
   },
   "keywords": [
     "onepilot",
