@@ -23,7 +23,8 @@ const EMAIL_FOOTER = [
   "小红书：@One Pilot",
 ].join("\n");
 const REQUIRED_RECOMMENDATION_REMINDER = "如果你要报名，可以把报名表截图或问题发给我，我帮你准备回答草稿。";
-const MATCH_REQUEST_SCHEMA_VERSION = "activity-match-request-v1.0";
+const MATCH_REQUEST_SCHEMA_VERSION = "activity-match-request-v1.1";
+const LEGACY_MATCH_REQUEST_SCHEMA_VERSION = "activity-match-request-v1.0";
 const ACTIVITY_TAXONOMY_VERSION = "activity-taxonomy-v1.0";
 
 function usage() {
@@ -39,7 +40,7 @@ Usage:
   onepilot-agent.mjs bind-email verify --email USER@example.com --code 123456 [--agent-name Codex]
   onepilot-agent.mjs bind-email verify --email USER@example.com --code-stdin [--agent-name Codex]
   onepilot-agent.mjs featured search --query TEXT [--limit 3]
-  onepilot-agent.mjs recommend --query TEXT [--topics TAG_IDS] [--goals TAG_IDS] [--audience TAG_IDS] [--stages TAG_IDS] [--districts A,B] [--formats TAG_IDS] [--values TAG_IDS] [--must TAG_IDS] [--exclude TAG_IDS] [--date-from YYYY-MM-DD] [--date-to YYYY-MM-DD] [--location TEXT] [--organizer-prefer TAGS] [--organizer-avoid TAGS] [--organizer-supplement true|false] [--limit 3]
+  onepilot-agent.mjs recommend --prefer-tags TAG_IDS [--must-tags TAG_IDS] [--exclude-tags TAG_IDS] [--region-codes shanghai,hangzhou,beijing] [--districts A,B] [--date-from YYYY-MM-DD] [--date-to YYYY-MM-DD] [--price TEXT] [--organizer-prefer TAGS] [--organizer-avoid TAGS] [--organizer-supplement true|false] [--limit 3]
   onepilot-agent.mjs organizer lookup --name NAME
   onepilot-agent.mjs organizer style --name NAME
   onepilot-agent.mjs organizer audience --name NAME
@@ -552,38 +553,70 @@ async function bindEmail(args) {
 
 async function recommend(args) {
   const config = requireConfig();
-  const payload = {
-    schemaVersion: MATCH_REQUEST_SCHEMA_VERSION,
-    taxonomyVersion: ACTIVITY_TAXONOMY_VERSION,
-    query: String(args.query || "").trim(),
-    limit: args.limit ? Number(args.limit) : 3,
-    useSavedMemory: args["use-saved-memory"] !== "false",
-    profile: {
-      topics: splitList(args.topics),
-      needs: splitList(args.needs),
-      goals: splitList(args.goals),
-      audience: splitList(args.audience),
-      stages: splitList(args.stages),
-    },
-    preferences: {
-      districts: splitList(args.districts),
-      formats: splitList(args.formats),
-      values: splitList(args.values),
-      price: String(args.price || "").trim(),
-    },
-    constraints: {
-      dateFrom: String(args["date-from"] || "").trim(),
-      dateTo: String(args["date-to"] || "").trim(),
-      location: String(args.location || "").trim(),
-      must: splitList(args.must),
-      exclude: splitList(args.exclude),
-    },
-    organizerPreferences: {
-      prefer: splitList(args["organizer-prefer"]),
-      avoid: splitList(args["organizer-avoid"]),
-      allowSupplement: args["organizer-supplement"] !== "false",
-    },
-  };
+  const structuredTags = [
+    ...splitList(args["prefer-tags"]),
+    ...splitList(args["must-tags"]),
+    ...splitList(args["exclude-tags"]),
+  ];
+  const useStructuredProtocol = structuredTags.length > 0;
+  const payload = useStructuredProtocol
+    ? {
+        schemaVersion: MATCH_REQUEST_SCHEMA_VERSION,
+        taxonomyVersion: ACTIVITY_TAXONOMY_VERSION,
+        limit: args.limit ? Number(args.limit) : 3,
+        useSavedMemory: args["use-saved-memory"] !== "false",
+        intent: {
+          preferTags: splitList(args["prefer-tags"]),
+          mustTags: splitList(args["must-tags"]),
+          excludeTags: splitList(args["exclude-tags"]),
+        },
+        constraints: {
+          regionCodes: splitList(args["region-codes"]),
+          districts: splitList(args.districts),
+          dateFrom: String(args["date-from"] || "").trim(),
+          dateTo: String(args["date-to"] || "").trim(),
+        },
+        preferences: {
+          price: String(args.price || "").trim(),
+        },
+        organizerPreferences: {
+          prefer: splitList(args["organizer-prefer"]),
+          avoid: splitList(args["organizer-avoid"]),
+          allowSupplement: args["organizer-supplement"] !== "false",
+        },
+      }
+    : {
+        schemaVersion: LEGACY_MATCH_REQUEST_SCHEMA_VERSION,
+        taxonomyVersion: ACTIVITY_TAXONOMY_VERSION,
+        query: String(args.query || "").trim(),
+        limit: args.limit ? Number(args.limit) : 3,
+        useSavedMemory: args["use-saved-memory"] !== "false",
+        profile: {
+          topics: splitList(args.topics),
+          needs: splitList(args.needs),
+          goals: splitList(args.goals),
+          audience: splitList(args.audience),
+          stages: splitList(args.stages),
+        },
+        preferences: {
+          districts: splitList(args.districts),
+          formats: splitList(args.formats),
+          values: splitList(args.values),
+          price: String(args.price || "").trim(),
+        },
+        constraints: {
+          dateFrom: String(args["date-from"] || "").trim(),
+          dateTo: String(args["date-to"] || "").trim(),
+          location: String(args.location || "").trim(),
+          must: splitList(args.must),
+          exclude: splitList(args.exclude),
+        },
+        organizerPreferences: {
+          prefer: splitList(args["organizer-prefer"]),
+          avoid: splitList(args["organizer-avoid"]),
+          allowSupplement: args["organizer-supplement"] !== "false",
+        },
+      };
   const result = await postJson(`${config.supabaseUrl}/functions/v1/agent-recommend`, payload, config.agentToken);
   if (result && typeof result === "object" && Array.isArray(result.results)) {
     return {

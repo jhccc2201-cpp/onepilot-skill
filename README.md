@@ -1,6 +1,6 @@
 # OnePilot Skill
 
-`0.1.19-alpha` adds evidence-backed organizer intelligence. Event recommendations can return up to one optional organizer-affinity supplement after the primary activity matches, and agents can query, compare, or request a reviewed public-source enrichment task for an organizer.
+`0.1.20-alpha` sends activity intent as validated taxonomy tags instead of raw user questions. Recommendation results include deterministic reason evidence and opaque OnePilot links that record aggregate clicks before redirecting to the existing event page.
 
 OnePilot Skill 是给本地 agent 使用的 **Skill + CLI 工具包**。
 
@@ -123,13 +123,14 @@ node "$HOME/.codex/skills/onepilot/scripts/onepilot-agent.mjs" bind --code OPB-X
 
 ```bash
 node "$HOME/.codex/skills/onepilot/scripts/onepilot-agent.mjs" recommend \
-  --query "这周有什么适合我的 AI agent 创业活动" \
-  --topics "AI agent,创业" \
+  --prefer-tags "audience.solo_founder,goal.networking,value.hands_on" \
+  --must-tags "topic.ai_agent" \
+  --region-codes "shanghai" \
   --districts "徐汇,静安" \
   --limit 3
 ```
 
-agent 应该先说明最推荐的一条，再列出其他选项，并附上 OnePilot 站内活动 URL。`recommend` 返回里会包含 `requiredClosingReminder`，agent 必须把它作为每次活动推荐回答的最后一句。
+agent 先在本地把自然语言映射成标签，只把标签和结构化约束发送给 OnePilot。回答时先说明最推荐的一条，再列出其他选项，并原样附上返回的追踪 URL；该 URL 会记录一次点击后跳转到 OnePilot 站内活动页。`recommend` 返回里会包含 `requiredClosingReminder`，agent 必须把它作为每次活动推荐回答的最后一句。
 
 如果用户问“哪一场更值得去”“帮我判断要不要报名”，agent 可以用推荐结果里的 `detailToken` 调用 `event-context` 获取更完整的活动上下文。
 

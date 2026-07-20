@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.20-alpha
+
+- Send recommendation intent through taxonomy `preferTags`, `mustTags`, and `excludeTags` instead of raw user questions.
+- Add structured region/date constraints while keeping the legacy request format temporarily compatible.
+- Preserve opaque tracked recommendation URLs and deterministic reason evidence in agent answers.
+- Add contract tests for the structured protocol and tracked-link behavior.
+
 ## 0.1.19-alpha
 
 - Add optional organizer-affinity supplement flags to event recommendations.
